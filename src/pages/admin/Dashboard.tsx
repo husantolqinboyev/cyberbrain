@@ -117,7 +117,6 @@ const AdminDashboard = () => {
       const response = await fetch('https://dwvosiwottjjixudppca.supabase.co/functions/v1/create-teacher', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
