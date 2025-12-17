@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [react({
+    jsxImportSource: 'react'
+  }), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -17,7 +19,6 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
-    'global': 'globalThis',
   },
   build: {
     rollupOptions: {
@@ -25,6 +26,5 @@ export default defineConfig(({ mode }) => ({
         manualChunks: undefined,
       },
     },
-    target: 'esnext',
   },
 }));
