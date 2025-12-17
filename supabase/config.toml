@@ -1,0 +1,7 @@
+project_id = "dwvosiwottjjixudppca"
+
+[functions.create-admin]
+verify_jwt = false
+
+[functions.game-session]
+verify_jwt = false
