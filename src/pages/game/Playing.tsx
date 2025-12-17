@@ -71,7 +71,7 @@ const GamePlaying = () => {
       return;
     }
     if (sessionData?.status === 'finished') {
-      navigate('/game/results');
+      navigate(`/game/results?pid=${sessionData.participantId}`);
     }
     if (sessionData?.status === 'waiting') {
       navigate('/game/waiting');
@@ -174,7 +174,7 @@ const GamePlaying = () => {
 
           // Handle status changes
           if (newData.status === 'finished') {
-            navigate('/game/results');
+            navigate(`/game/results?pid=${sessionData.participantId}`);
           }
         }
       )
