@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(mode),
+    'global': 'globalThis',
   },
   build: {
     rollupOptions: {
@@ -24,5 +25,6 @@ export default defineConfig(({ mode }) => ({
         manualChunks: undefined,
       },
     },
+    target: 'esnext',
   },
 }));
