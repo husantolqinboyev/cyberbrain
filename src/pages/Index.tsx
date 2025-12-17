@@ -1,40 +1,9 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberButton } from "@/components/ui/cyber-button";
-import { CyberCard, CyberCardHeader, CyberCardTitle, CyberCardContent } from "@/components/ui/cyber-card";
-import { Users, GraduationCap, Zap, Trophy, Clock, Target, Crown, Search } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Users, GraduationCap, Zap, Trophy, Clock, Target } from "lucide-react";
 
 const Index = () => {
-  const [pin, setPin] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const handleSearchResults = async () => {
-    if (!pin.trim()) return;
-    
-    setIsSearching(true);
-    try {
-      const { data, error } = await supabase
-        .from('game_sessions')
-        .select('id, pin_code, status, created_at, quiz_blocks!inner(title)')
-        .eq('pin_code', pin.toUpperCase())
-        .eq('status', 'finished')
-        .order('created_at', { ascending: false }) as any;
-
-      if (error) {
-        console.error('Search error:', error);
-        return;
-      }
-
-      setSearchResults(data || []);
-    } catch (err) {
-      console.error('Search failed:', err);
-    } finally {
-      setIsSearching(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background cyber-grid overflow-hidden">
@@ -116,75 +85,6 @@ const Index = () => {
               description="6 xonali kod bilan o'yinga qo'shiling"
               glow="accent"
             />
-          </div>
-        </section>
-
-        {/* Results Search Section */}
-        <section className="container mx-auto px-4 py-20 border-t-2 border-border">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-center mb-16 uppercase">
-            <span className="text-accent">Natijalarni</span>{" "}
-            <span className="text-foreground">Ko'rish</span>
-          </h2>
-
-          <div className="max-w-2xl mx-auto">
-            <CyberCard>
-              <CyberCardHeader>
-                <CyberCardTitle className="flex items-center gap-2">
-                  <Search className="w-5 h-5" />
-                  PIN Kod orqali Natijalar
-                </CyberCardTitle>
-              </CyberCardHeader>
-              <CyberCardContent>
-                <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={pin}
-                      onChange={(e) => setPin(e.target.value.toUpperCase())}
-                      placeholder="PIN kodini kiriting"
-                      className="flex-1 px-4 py-2 border-2 border-border bg-background font-mono text-lg rounded-lg focus:outline-none focus:border-primary"
-                      maxLength={6}
-                    />
-                    <CyberButton 
-                      onClick={handleSearchResults}
-                      disabled={isSearching || pin.length !== 6}
-                      variant="accent"
-                    >
-                      {isSearching ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        <Search className="w-4 h-4" />
-                      )}
-                    </CyberButton>
-                  </div>
-
-                  {searchResults.length > 0 && (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      <h3 className="font-display text-lg text-primary mb-3">Yakunlangan O'yinlar</h3>
-                      {searchResults.map((game) => (
-                        <div
-                          key={game.id}
-                          className="flex items-center justify-between p-3 border-2 border-border rounded-lg hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Trophy className="w-5 h-5 text-accent" />
-                            <div>
-                              <p className="font-mono text-sm text-muted-foreground">{game.pin_code}</p>
-                              <p className="font-display text-base">{game.quiz_blocks?.title}</p>
-                            </div>
-                          </div>
-                          <Link to={`/game/results?session=${game.id}`}>
-                            <CyberButton variant="outline" size="sm">
-                              Natijalarni Ko'rish
-                            </CyberButton>
-                          </Link>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CyberCardContent>
-            </CyberCard>
           </div>
         </section>
 
