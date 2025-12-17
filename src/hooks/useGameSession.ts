@@ -91,22 +91,7 @@ export const useGameSession = () => {
     }
   }, []);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('gameSession');
-    if (saved) {
-      try {
-        const savedData = JSON.parse(saved);
-        if (savedData.participantId) {
-          checkSessionWithId(savedData.participantId);
-        }
-      } catch (err) {
-        console.error('Error parsing saved session:', err);
-        localStorage.removeItem('gameSession');
-      }
-    }
-  }, []);
-
+  
   // Check session with participant ID
   const checkSessionWithId = useCallback(async (participantId: string) => {
     setIsLoading(true);
