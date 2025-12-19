@@ -120,6 +120,9 @@ const AdminDashboard = () => {
         throw new Error('Authentication required');
       }
       
+      console.log('Session token exists:', !!session.access_token);
+      console.log('User ID:', session.user.id);
+      
       // Create teacher using admin API
       const response = await fetch('https://dwvosiwottjjixudppca.supabase.co/functions/v1/create-teacher', {
         method: 'POST',
@@ -135,7 +138,11 @@ const AdminDashboard = () => {
         })
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
       const result = await response.json();
+      console.log('Response data:', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create teacher');
@@ -265,12 +272,12 @@ const AdminDashboard = () => {
                 O'qituvchi Qo'shish
               </CyberButton>
             </DialogTrigger>
-            <DialogContent className="bg-card border-2 border-accent">
+            <DialogContent className="bg-card border-2 border-accent" aria-describedby="dialog-description">
               <DialogHeader>
                 <DialogTitle className="font-display text-xl text-accent">
                   Yangi O'qituvchi
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription id="dialog-description">
                   Yangi o'qituvchi yaratish uchun ma'lumotlarni kiriting
                 </DialogDescription>
               </DialogHeader>
