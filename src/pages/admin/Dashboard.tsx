@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -113,11 +114,18 @@ const AdminDashboard = () => {
     try {
       const email = `${newNickname.toLowerCase()}@cyberbrain.local`;
       
+      // Get current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Authentication required');
+      }
+      
       // Create teacher using admin API
       const response = await fetch('https://dwvosiwottjjixudppca.supabase.co/functions/v1/create-teacher', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           email,
@@ -262,6 +270,9 @@ const AdminDashboard = () => {
                 <DialogTitle className="font-display text-xl text-accent">
                   Yangi O'qituvchi
                 </DialogTitle>
+                <DialogDescription>
+                  Yangi o'qituvchi yaratish uchun ma'lumotlarni kiriting
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreateTeacher} className="space-y-4 mt-4">
                 <CyberInput
