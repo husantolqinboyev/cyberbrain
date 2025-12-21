@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberCard, CyberCardContent } from "@/components/ui/cyber-card";
-import { Users, Loader2 } from "lucide-react";
+import { CyberButton } from "@/components/ui/cyber-button";
+import { Users, Loader2, LogOut, Trash2 } from "lucide-react";
 import { useGameSession } from "@/hooks/useGameSession";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -10,8 +11,45 @@ const GameWaiting = () => {
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get("pid") || "";
   const [dots, setDots] = useState("");
+  const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
-  const { sessionData, isLoading, updateSessionState, checkSession } = useGameSession();
+  const { sessionData, isLoading, updateSessionState, checkSession, leaveSession } = useGameSession();
+
+  // Handle exit from waiting room
+  const handleExit = async () => {
+    setIsLeaving(true);
+    try {
+      // Leave the session
+      if (sessionData?.participantId) {
+        await leaveSession();
+      }
+      
+      // Clear localStorage
+      localStorage.removeItem('gameSession');
+      
+      // Navigate back to play page
+      navigate('/play');
+    } catch (error) {
+      console.error('Error exiting session:', error);
+      // Force navigation even if there's an error
+      localStorage.removeItem('gameSession');
+      navigate('/play');
+    }
+  };
+
+  // Check if session is older than 12 hours and clean up
+  const checkSessionAge = () => {
+    if (!sessionData?.sessionId) return;
+    
+    // Get session creation time from session data or check database
+    const sessionCreatedTime = sessionData.questionStartedAt || Date.now();
+    const twelveHoursInMs = 12 * 60 * 60 * 1000;
+    
+    if (Date.now() - new Date(sessionCreatedTime).getTime() > twelveHoursInMs) {
+      console.log('Session is older than 12 hours, cleaning up...');
+      handleExit();
+    }
+  };
 
   // Dots animation
   useEffect(() => {
@@ -28,6 +66,13 @@ const GameWaiting = () => {
       checkSession(participantId);
     }
   }, [participantId, sessionData, isLoading, checkSession]);
+
+  // Check session age when session data is available
+  useEffect(() => {
+    if (sessionData) {
+      checkSessionAge();
+    }
+  }, [sessionData]);
 
   // Check if game should redirect to playing based on session status
   useEffect(() => {
@@ -158,6 +203,23 @@ const GameWaiting = () => {
             <p className="mt-8 text-xs text-muted-foreground font-mono">
               Sahifani yopmang. O'yin boshlanganda avtomatik o'tasiz.
             </p>
+
+            {/* Exit Button */}
+            <div className="mt-6 space-y-3">
+              <CyberButton
+                variant="outline"
+                onClick={handleExit}
+                disabled={isLeaving}
+                className="w-full"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                {isLeaving ? "Chiqilmoqda..." : "Kutishdan chiqish"}
+              </CyberButton>
+              
+              <p className="text-xs text-muted-foreground font-mono text-center">
+                12 soat ichida o'yin boshlanmasa avtomatik chiqiladi
+              </p>
+            </div>
           </CyberCardContent>
         </CyberCard>
       </main>
