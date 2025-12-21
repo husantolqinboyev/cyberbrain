@@ -145,28 +145,23 @@ const AdminDashboard = () => {
       console.log('Response data:', result);
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create teacher');
+        console.error('API Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          result: result
+        });
+        
+        if (response.status === 500) {
+          throw new Error('Serverda ichki xatolik yuz berdi. Iltimos, keyinroq urinib ko\'ring.');
+        } else if (response.status === 401) {
+          throw new Error('Avtorizatsiya xatosi. Qayta login qiling.');
+        } else {
+          throw new Error(result.error || `Xatolik: ${response.status}`);
+        }
       }
 
       const data = { user: result };
-
-      // Add teacher role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: result.user_id,
-          role: 'teacher',
-        });
-
-      if (roleError) {
-        toast({
-          title: "Xato",
-          description: roleError.message,
-          variant: "destructive",
-        });
-        setIsCreating(false);
-        return;
-      }
 
       toast({
         title: "Muvaffaqiyat!",
@@ -272,12 +267,12 @@ const AdminDashboard = () => {
                 O'qituvchi Qo'shish
               </CyberButton>
             </DialogTrigger>
-            <DialogContent className="bg-card border-2 border-accent" aria-describedby="dialog-description">
+            <DialogContent className="bg-card border-2 border-accent" aria-describedby="teacher-dialog-description">
               <DialogHeader>
                 <DialogTitle className="font-display text-xl text-accent">
                   Yangi O'qituvchi
                 </DialogTitle>
-                <DialogDescription id="dialog-description">
+                <DialogDescription id="teacher-dialog-description">
                   Yangi o'qituvchi yaratish uchun ma'lumotlarni kiriting
                 </DialogDescription>
               </DialogHeader>
