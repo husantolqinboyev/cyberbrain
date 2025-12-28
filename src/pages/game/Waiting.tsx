@@ -113,7 +113,7 @@ const GameWaiting = () => {
       console.log('Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [sessionData?.sessionId, sessionData?.participantId, navigate, updateSessionState]);
+  }, [sessionData?.sessionId]); // Only depend on sessionId, not on navigate/updateSessionState
 
   // Check session age when session data is available
   useEffect(() => {
@@ -123,18 +123,11 @@ const GameWaiting = () => {
       // If game is already playing, navigate immediately
       if (sessionData.status === 'playing') {
         console.log('Game is already playing, redirecting immediately');
-        navigate(`/game/playing?pid=${sessionData.participantId}`);
+        // Use window.location.href for force navigation
+        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
       }
     }
-  }, [sessionData, navigate]);
-
-  // Check if game should redirect to playing based on session status
-  useEffect(() => {
-    if (sessionData?.status === 'playing') {
-      console.log('Game status changed to playing, redirecting to playing page');
-      navigate(`/game/playing?pid=${sessionData.participantId}`);
-    }
-  }, [sessionData?.status, sessionData?.participantId, navigate]);
+  }, [sessionData]);
 
   // Redirect if no session
   useEffect(() => {
