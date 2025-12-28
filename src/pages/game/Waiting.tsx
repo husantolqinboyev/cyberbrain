@@ -67,6 +67,54 @@ const GameWaiting = () => {
     }
   }, [participantId, sessionData, isLoading, checkSession]);
 
+  // Subscribe to game session changes for realtime updates
+  useEffect(() => {
+    if (!sessionData?.sessionId) return;
+
+    console.log('Setting up realtime subscription for session:', sessionData.sessionId);
+    
+    const channel = supabase
+      .channel(`game-session-${sessionData.sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'game_sessions',
+          filter: `id=eq.${sessionData.sessionId}`
+        },
+        (payload) => {
+          console.log('Realtime update received:', payload);
+          const newData = payload.new as {
+            status: string;
+            current_question_index: number;
+            question_started_at: string | null;
+          };
+          
+          console.log('Updating session state to:', newData);
+          updateSessionState(
+            newData.status,
+            newData.current_question_index,
+            newData.question_started_at
+          );
+
+          // Navigate to playing page when game starts
+          if (newData.status === 'playing') {
+            console.log('Game started, navigating to playing page');
+            navigate(`/game/playing?pid=${sessionData.participantId}`);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [sessionData?.sessionId, sessionData?.participantId, navigate, updateSessionState]);
+
   // Check session age when session data is available
   useEffect(() => {
     if (sessionData) {
@@ -94,46 +142,6 @@ const GameWaiting = () => {
       navigate('/play');
     }
   }, [isLoading, sessionData, participantId, navigate]);
-
-  // Subscribe to game session changes for realtime updates
-  useEffect(() => {
-    if (!sessionData?.sessionId) return;
-
-    const channel = supabase
-      .channel(`game-session-${sessionData.sessionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'game_sessions',
-          filter: `id=eq.${sessionData.sessionId}`
-        },
-        (payload) => {
-          const newData = payload.new as {
-            status: string;
-            current_question_index: number;
-            question_started_at: string | null;
-          };
-          
-          updateSessionState(
-            newData.status,
-            newData.current_question_index,
-            newData.question_started_at
-          );
-
-          // Navigate to playing page when game starts
-          if (newData.status === 'playing') {
-            navigate(`/game/playing?pid=${sessionData.participantId}`);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionData?.sessionId, sessionData?.participantId, navigate, updateSessionState]);
 
   if (isLoading) {
     return (

@@ -255,6 +255,8 @@ const GameControl = () => {
       return;
     }
 
+    console.log('Starting game for session:', session.id);
+    
     const { error } = await supabase
       .from('game_sessions')
       .update({
@@ -266,10 +268,13 @@ const GameControl = () => {
       .eq('id', session.id);
 
     if (error) {
+      console.error('Error starting game:', error);
       toast({ title: "Xato", description: "O'yinni boshlashda xatolik", variant: "destructive" });
       return;
     }
 
+    console.log('Game started successfully, session status updated');
+    
     // Play notification sound when game starts
     playNotificationSound();
     toast({ title: "Muvaffaqiyat", description: "O'yin boshlandi!" });
