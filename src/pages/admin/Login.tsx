@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberButton } from "@/components/ui/cyber-button";
@@ -13,16 +13,65 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Generate CSRF token on component mount
+  const [csrfToken] = useState(() => {
+    return crypto.randomUUID();
+  });
+
+  // Check if account is locked
+  useEffect(() => {
+    const lockTime = localStorage.getItem('adminLockTime');
+    const attempts = parseInt(localStorage.getItem('loginAttempts') || '0');
+    
+    if (lockTime && new Date().getTime() < parseInt(lockTime)) {
+      setIsLocked(true);
+      const remainingTime = Math.ceil((parseInt(lockTime) - new Date().getTime()) / 60000);
+      toast({
+        title: "Account Locked",
+        description: `Account locked for ${remainingTime} minutes due to too many failed attempts`,
+        variant: "destructive",
+      });
+    } else if (attempts >= 5) {
+      // Reset after lock period expires
+      localStorage.removeItem('loginAttempts');
+      localStorage.removeItem('adminLockTime');
+      setLoginAttempts(0);
+    } else {
+      setLoginAttempts(attempts);
+    }
+  }, [toast]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLocked) {
+      toast({
+        title: "Account Locked",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!nickname.trim() || !password.trim()) {
       toast({
         title: "Xato",
         description: "Iltimos, barcha maydonlarni to'ldiring",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check password strength
+    if (password.length < 8) {
+      toast({
+        title: "Xato",
+        description: "Parol kamida 8 ta belgidan iborat bo'lishi kerak",
         variant: "destructive",
       });
       return;
@@ -38,14 +87,38 @@ const AdminLogin = () => {
       });
 
       if (error) {
-        toast({
-          title: "Kirish xatosi",
-          description: "Nickname yoki parol noto'g'ri",
-          variant: "destructive",
-        });
+        // Increment login attempts
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        localStorage.setItem('loginAttempts', newAttempts.toString());
+        
+        // Lock account after 5 failed attempts
+        if (newAttempts >= 5) {
+          const lockTime = new Date().getTime() + (15 * 60 * 1000); // 15 minutes
+          localStorage.setItem('adminLockTime', lockTime.toString());
+          setIsLocked(true);
+          
+          toast({
+            title: "Account Locked",
+            description: "Too many failed attempts. Account locked for 15 minutes",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Kirish xatosi",
+            description: `Nickname yoki parol noto'g'ri. ${5 - newAttempts} attempts remaining`,
+            variant: "destructive",
+          });
+        }
+        
         setIsLoading(false);
         return;
       }
+
+      // Reset login attempts on successful login
+      localStorage.removeItem('loginAttempts');
+      localStorage.removeItem('adminLockTime');
+      setLoginAttempts(0);
 
       // Check if user has admin role
       const { data: roleData, error: roleError } = await supabase
