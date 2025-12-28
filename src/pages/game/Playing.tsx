@@ -3,10 +3,21 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberButton } from "@/components/ui/cyber-button";
 import { CyberCard, CyberCardContent } from "@/components/ui/cyber-card";
-import { Clock, CheckCircle, XCircle, Loader2, Trophy } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Loader2, Trophy, LogOut } from "lucide-react";
 import { useGameSession } from "@/hooks/useGameSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Question {
   id: string;
@@ -22,7 +33,7 @@ const GamePlaying = () => {
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get("pid") || "";
   const { toast } = useToast();
-  const { sessionData, isLoading, submitAnswer, updateSessionState, checkSession, getCurrentRank } = useGameSession();
+  const { sessionData, isLoading, submitAnswer, updateSessionState, checkSession, getCurrentRank, leaveSession } = useGameSession();
   
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -32,6 +43,29 @@ const GamePlaying = () => {
   const [questionStartTime, setQuestionStartTime] = useState<number>(0);
   const [randomMessageIndex, setRandomMessageIndex] = useState(0);
   const [currentRank, setCurrentRank] = useState<number | null>(null);
+  const [isExiting, setIsExiting] = useState(false);
+
+  // Handle exit from game
+  const handleExit = async () => {
+    setIsExiting(true);
+    try {
+      // Leave the session
+      if (sessionData?.participantId) {
+        await leaveSession();
+      }
+      
+      // Clear localStorage
+      localStorage.removeItem('gameSession');
+      
+      // Navigate back to play page
+      navigate('/play');
+    } catch (error) {
+      console.error('Error exiting game:', error);
+      // Force navigation even if there's an error
+      localStorage.removeItem('gameSession');
+      navigate('/play');
+    }
+  };
 
   // Random funny messages
   const waitingMessages = [
@@ -290,6 +324,30 @@ const GamePlaying = () => {
                 {sessionData?.nickname}
               </span>
             </div>
+            
+            {/* Exit Button */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <CyberButton variant="outline" size="sm" disabled={isExiting}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {isExiting ? "Chiqilmoqda..." : "Chiqish"}
+                </CyberButton>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>O'yinni tark etish</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Siz haqiqatan ham o'yinni tark etmoqchimisiz? Sizning natijangiz saqlanib qoladi, lekin o'yinni davom ettira olmaysiz.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleExit} className="bg-destructive hover:bg-destructive/90">
+                    Ha, chiqish
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </header>
