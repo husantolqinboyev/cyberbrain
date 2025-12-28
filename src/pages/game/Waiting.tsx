@@ -147,10 +147,10 @@ const GameWaiting = () => {
 
       {/* Header */}
       <header className="relative z-10 border-b-2 border-border bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-center">
-          <Link to="/" className="flex items-center gap-3">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3">
             <BrainLogo size="sm" />
-            <span className="font-display text-xl font-bold text-primary text-glow-primary">
+            <span className="font-display text-lg sm:text-xl font-bold text-primary text-glow-primary">
               CYBERBRAIN
             </span>
           </Link>
@@ -158,54 +158,54 @@ const GameWaiting = () => {
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center p-4">
-        <CyberCard glow="primary" className="w-full max-w-lg text-center">
-          <CyberCardContent className="py-12">
-            <div className="flex justify-center mb-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center p-2 sm:p-4">
+        <CyberCard glow="primary" className="w-full max-w-md sm:max-w-lg text-center">
+          <CyberCardContent className="py-8 sm:py-12">
+            <div className="flex justify-center mb-4 sm:mb-6">
               <div className="relative">
                 <BrainLogo size="lg" animated />
-                <Loader2 className="absolute -bottom-2 -right-2 w-8 h-8 text-accent animate-spin" />
+                <Loader2 className="absolute -bottom-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 text-accent animate-spin" />
               </div>
             </div>
 
-            <h1 className="font-display text-2xl font-bold uppercase mb-4 text-foreground">
+            <h1 className="font-display text-xl sm:text-2xl font-bold uppercase mb-3 sm:mb-4 text-foreground">
               Kutilmoqda{dots}
             </h1>
 
-            <p className="text-muted-foreground font-mono mb-8">
+            <p className="text-muted-foreground font-mono text-sm sm:text-base mb-6 sm:mb-8">
               O'qituvchi o'yinni boshlaguncha kuting
             </p>
 
-            <div className="bg-muted p-6 border-2 border-border">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Users className="w-5 h-5 text-primary" />
-                <span className="font-display text-sm uppercase text-muted-foreground">
+            <div className="bg-muted p-4 sm:p-6 border-2 border-border">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span className="font-display text-xs sm:text-sm uppercase text-muted-foreground">
                   Sizning Ma'lumotlaringiz
                 </span>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-mono text-sm">PIN:</span>
-                  <span className="font-mono text-xl text-primary tracking-wider">
+                  <span className="text-muted-foreground font-mono text-xs sm:text-sm">PIN:</span>
+                  <span className="font-mono text-lg sm:text-xl text-primary tracking-wider">
                     {sessionData?.pin || '------'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-mono text-sm">Nickname:</span>
-                  <span className="font-display text-lg text-accent">
+                  <span className="text-muted-foreground font-mono text-xs sm:text-sm">Nickname:</span>
+                  <span className="font-display text-base sm:text-lg text-accent">
                     {sessionData?.nickname || 'Loading...'}
                   </span>
                 </div>
               </div>
             </div>
 
-            <p className="mt-8 text-xs text-muted-foreground font-mono">
+            <p className="mt-6 sm:mt-8 text-xs text-muted-foreground font-mono">
               Sahifani yopmang. O'yin boshlanganda avtomatik o'tasiz.
             </p>
 
             {/* Exit Button */}
-            <div className="mt-6 space-y-3">
+            <div className="mt-4 sm:mt-6 space-y-3">
               <CyberButton
                 variant="outline"
                 onClick={handleExit}

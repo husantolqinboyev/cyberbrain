@@ -303,24 +303,27 @@ const GamePlaying = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <BrainLogo size="sm" />
-            <span className="font-display text-lg font-bold text-primary">
+            <span className="font-display text-lg font-bold text-primary hidden sm:block">
               CYBERBRAIN
             </span>
+            <span className="font-display text-lg font-bold text-primary sm:hidden">
+              CB
+            </span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-accent" />
-              <span className="font-display text-lg text-accent">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+              <span className="font-display text-base sm:text-lg text-accent">
                 {sessionData?.totalScore || 0}
               </span>
               {currentRank && (
-                <span className="font-mono text-sm text-muted-foreground ml-2">
+                <span className="font-mono text-xs sm:text-sm text-muted-foreground ml-1 sm:ml-2">
                   #{currentRank}
                 </span>
               )}
             </div>
             <div className="text-right">
-              <span className="font-mono text-sm text-muted-foreground">
+              <span className="font-mono text-xs sm:text-sm text-muted-foreground">
                 {sessionData?.nickname}
               </span>
             </div>
@@ -333,16 +336,16 @@ const GamePlaying = () => {
                   {isExiting ? "Chiqilmoqda..." : "Chiqish"}
                 </CyberButton>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="max-w-md mx-4">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>O'yinni tark etish</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-lg">O'yinni tark etish</AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm">
                     Siz haqiqatan ham o'yinni tark etmoqchimisiz? Sizning natijangiz saqlanib qoladi, lekin o'yinni davom ettira olmaysiz.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleExit} className="bg-destructive hover:bg-destructive/90">
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="w-full sm:w-auto">Bekor qilish</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleExit} className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto">
                     Ha, chiqish
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -365,24 +368,24 @@ const GamePlaying = () => {
       </div>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 flex flex-col p-4 max-w-3xl mx-auto w-full">
+      <main className="relative z-10 flex-1 flex flex-col p-2 sm:p-4 max-w-3xl mx-auto w-full">
         {/* Timer and Question Number */}
-        <div className="flex items-center justify-between mb-4">
-          <span className="font-mono text-sm text-muted-foreground">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <span className="font-mono text-xs sm:text-sm text-muted-foreground">
             Savol {(sessionData?.currentQuestionIndex || 0) + 1}
           </span>
-          <div className={`flex items-center gap-2 font-display text-2xl ${
+          <div className={`flex items-center gap-2 font-display text-lg sm:text-2xl ${
             timeLeft <= 5 ? 'text-destructive animate-pulse' : 'text-accent'
           }`}>
-            <Clock className="w-6 h-6" />
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
             {timeLeft}s
           </div>
         </div>
 
         {/* Question */}
-        <CyberCard glow="primary" className="mb-6">
-          <CyberCardContent className="py-8">
-            <h2 className="font-display text-xl md:text-2xl text-center text-foreground">
+        <CyberCard glow="primary" className="mb-4 sm:mb-6">
+          <CyberCardContent className="py-6 sm:py-8">
+            <h2 className="font-display text-lg sm:text-xl md:text-2xl text-center text-foreground">
               {currentQuestion.question_text}
             </h2>
           </CyberCardContent>
@@ -390,36 +393,36 @@ const GamePlaying = () => {
 
         {/* Answer Result Overlay */}
         {hasAnswered && answerResult && (
-          <div className="mb-4 text-center">
+          <div className="mb-3 sm:mb-4 text-center">
             <CyberCard glow={timeLeft <= 0 ? (answerResult.isCorrect ? 'accent' : 'primary') : 'secondary'}>
-              <CyberCardContent className="py-4">
-                <div className="flex items-center justify-center gap-3">
+              <CyberCardContent className="py-3 sm:py-4">
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
                   {timeLeft <= 0 ? (
                     answerResult.isCorrect ? (
                       <>
-                        <CheckCircle className="w-8 h-8 text-accent" />
-                        <span className="font-display text-xl text-accent">
+                        <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-accent" />
+                        <span className="font-display text-base sm:text-xl text-accent">
                           To'g'ri! +{answerResult.pointsEarned} ball
                         </span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-8 h-8 text-destructive" />
-                        <span className="font-display text-xl text-destructive">
+                        <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-destructive" />
+                        <span className="font-display text-base sm:text-xl text-destructive">
                           Noto'g'ri
                         </span>
                       </>
                     )
                   ) : (
                     <>
-                      <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
-                      <span className="font-display text-xl text-muted-foreground">
+                      <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground animate-spin" />
+                      <span className="font-display text-base sm:text-xl text-muted-foreground">
                         {waitingMessages[randomMessageIndex]}
                       </span>
                     </>
                   )}
                 </div>
-                <p className="text-muted-foreground font-mono text-sm mt-2">
+                <p className="text-muted-foreground font-mono text-xs sm:text-sm mt-2">
                   {timeLeft > 0 ? 'Vaqt tugashi kutilmoqda...' : 'Keyingi savol kutilmoqda...'}
                 </p>
               </CyberCardContent>
@@ -428,7 +431,7 @@ const GamePlaying = () => {
         )}
 
         {/* Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 flex-1">
           {currentQuestion.options.map((option, index) => {
             const isSelected = selectedOption === index;
             const isDisabled = hasAnswered || timeLeft <= 0;
@@ -437,17 +440,17 @@ const GamePlaying = () => {
               <CyberButton
                 key={index}
                 variant={isSelected ? optionColors[index % 4] : 'outline'}
-                className={`h-auto min-h-20 p-4 text-left whitespace-normal ${
+                className={`h-auto min-h-16 sm:min-h-20 p-3 sm:p-4 text-left whitespace-normal ${
                   isDisabled && !isSelected ? 'opacity-50' : ''
                 }`}
                 onClick={() => handleSelectOption(index)}
                 disabled={isDisabled}
               >
-                <div className="flex items-start gap-3 w-full">
-                  <span className="font-display text-lg shrink-0">
+                <div className="flex items-start gap-2 sm:gap-3 w-full">
+                  <span className="font-display text-base sm:text-lg shrink-0">
                     {String.fromCharCode(65 + index)}.
                   </span>
-                  <span className="font-mono text-sm md:text-base">
+                  <span className="font-mono text-sm sm:text-base">
                     {option}
                   </span>
                 </div>
@@ -458,13 +461,13 @@ const GamePlaying = () => {
 
         {/* Time's up message */}
         {timeLeft <= 0 && !hasAnswered && (
-          <div className="mt-4 text-center">
+          <div className="mt-3 sm:mt-4 text-center">
             <CyberCard>
-              <CyberCardContent className="py-4">
-                <p className="font-display text-lg text-destructive">
+              <CyberCardContent className="py-3 sm:py-4">
+                <p className="font-display text-base sm:text-lg text-destructive">
                   Vaqt tugadi!
                 </p>
-                <p className="text-muted-foreground font-mono text-sm mt-2">
+                <p className="text-muted-foreground font-mono text-xs sm:text-sm mt-2">
                   Keyingi savol kutilmoqda...
                 </p>
               </CyberCardContent>
