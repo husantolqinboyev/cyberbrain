@@ -3,9 +3,20 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberButton } from "@/components/ui/cyber-button";
 import { CyberCard, CyberCardHeader, CyberCardTitle, CyberCardContent } from "@/components/ui/cyber-card";
-import { Play, SkipForward, Users, Trophy, Clock, StopCircle, Loader2, AlertCircle } from "lucide-react";
+import { Play, SkipForward, Users, Trophy, Clock, StopCircle, Loader2, AlertCircle, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Participant {
   id: string;
@@ -45,6 +56,52 @@ const GameControl = () => {
   const [showNextPrompt, setShowNextPrompt] = useState(false);
   const [canProceed, setCanProceed] = useState(true);
   const [showResultsButton, setShowResultsButton] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
+  // Handle exit and terminate session
+  const handleExit = async () => {
+    setIsExiting(true);
+    try {
+      // Terminate the session regardless of current status
+      if (session) {
+        const { error } = await supabase
+          .from('game_sessions')
+          .update({
+            status: 'finished',
+            ended_at: new Date().toISOString()
+          })
+          .eq('id', session.id);
+
+        if (error) {
+          console.error('Error terminating session:', error);
+          toast({ 
+            title: "Xato",
+            description: "Sessiyani tugatishda xatolik", 
+            variant: "destructive" 
+          });
+        } else {
+          toast({ 
+            title: "Sessiya tugatildi", 
+            description: "Sessiya tugatildi va barcha o'quvchilar chiqarildi" 
+          });
+        }
+      }
+      
+      // Navigate back to dashboard
+      navigate("/teacher/dashboard");
+    } catch (error) {
+      console.error('Error exiting:', error);
+      toast({ 
+        title: "Xato", 
+        description: "Chiqishda xatolik", 
+        variant: "destructive" 
+      });
+      // Force navigation even if there's an error
+      navigate("/teacher/dashboard");
+    } finally {
+      setIsExiting(false);
+    }
+  };
 
   // Audio notification helper
   const playNotificationSound = () => {
@@ -305,50 +362,77 @@ const GameControl = () => {
 
       {/* Header */}
       <header className="relative z-10 border-b-2 border-border bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
             <BrainLogo size="sm" />
-            <span className="font-display text-xl font-bold text-primary text-glow-primary">
+            <span className="font-display text-lg font-bold text-primary text-glow-primary hidden sm:block">
               CYBERBRAIN
             </span>
+            <span className="font-display text-lg font-bold text-primary text-glow-primary sm:hidden">
+              CB
+            </span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="text-right">
-              <span className="text-muted-foreground font-mono text-sm">PIN: </span>
-              <span className="font-mono text-xl text-primary tracking-wider">
+              <span className="text-muted-foreground font-mono text-xs sm:text-sm">PIN: </span>
+              <span className="font-mono text-lg sm:text-xl text-primary tracking-wider">
                 {session?.pin_code}
               </span>
             </div>
+            
+            {/* Exit Button */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <CyberButton variant="outline" size="sm" disabled={isExiting}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  {isExiting ? "Chiqilmoqda..." : "Chiqish"}
+                </CyberButton>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="max-w-md mx-4">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-lg">Sessiyani tark etish</AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm">
+                    Siz haqiqatan ham sessiyani tark etmoqchimisiz? Sessiya tugatiladi va barcha o'quvchilar o'yindan chiqariladi. O'yin davom ettirib bo'lmaydi.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="w-full sm:w-auto">Bekor qilish</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleExit} className="bg-destructive hover:bg-destructive/90 w-full sm:w-auto">
+                    Ha, sessiyani tugatish
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <main className="relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Control Panel */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Status Card */}
             <CyberCard glow={session?.status === 'playing' ? 'accent' : 'primary'}>
-              <CyberCardHeader>
-                <CyberCardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
+              <CyberCardHeader className="pb-2 sm:pb-6">
+                <CyberCardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                   O'yin Holati
                 </CyberCardTitle>
               </CyberCardHeader>
-              <CyberCardContent>
-                <div className="flex items-center justify-between mb-6">
+              <CyberCardContent className="pt-2 sm:pt-0">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
                   <div>
-                    <p className="text-muted-foreground font-mono text-sm mb-1">Status</p>
-                    <p className="font-display text-xl uppercase">
+                    <p className="text-muted-foreground font-mono text-xs sm:text-sm mb-1">Status</p>
+                    <p className="font-display text-lg sm:text-xl uppercase">
                       {session?.status === 'waiting' && <span className="text-secondary">Kutilmoqda</span>}
                       {session?.status === 'playing' && <span className="text-accent">O'ynalmoqda</span>}
                       {session?.status === 'finished' && <span className="text-primary">Tugadi</span>}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-muted-foreground font-mono text-sm mb-1">Savol</p>
-                    <p className="font-display text-xl text-primary">
+                    <p className="text-muted-foreground font-mono text-xs sm:text-sm mb-1">Savol</p>
+                    <p className="font-display text-lg sm:text-xl text-primary">
                       {(session?.current_question_index || 0) + 1} / {questions.length}
                     </p>
                   </div>
@@ -356,33 +440,33 @@ const GameControl = () => {
 
                 {/* Current Question Display */}
                 {session?.status === 'playing' && currentQuestion && (
-                  <div className="bg-muted p-4 border-2 border-border mb-6">
+                  <div className="bg-muted p-3 sm:p-4 border-2 border-border mb-4 sm:mb-6">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-muted-foreground font-mono text-xs">
                         Hozirgi savol:
                       </p>
-                      <div className={`flex items-center gap-2 font-display text-lg ${
+                      <div className={`flex items-center gap-2 font-display text-base sm:text-lg ${
                         timeLeft <= 5 ? 'text-destructive animate-pulse' : 'text-accent'
                       }`}>
-                        <Clock className="w-5 h-5" />
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                         {timeLeft}s
                       </div>
                     </div>
-                    <p className="font-display text-lg text-foreground mb-3">
+                    <p className="font-display text-sm sm:text-lg text-foreground mb-3">
                       {currentQuestion.question_text}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground font-mono">
-                      <span><Clock className="w-4 h-4 inline mr-1" />{currentQuestion.time_seconds}s</span>
-                      <span><Trophy className="w-4 h-4 inline mr-1" />{currentQuestion.max_points} ball</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground font-mono">
+                      <span><Clock className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />{currentQuestion.time_seconds}s</span>
+                      <span><Trophy className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />{currentQuestion.max_points} ball</span>
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4">
                   {session?.status === 'waiting' && (
-                    <CyberButton onClick={startGame} disabled={participants.length === 0 || questions.length === 0}>
-                      <Play className="w-5 h-5" />
+                    <CyberButton onClick={startGame} disabled={participants.length === 0 || questions.length === 0} className="w-full sm:w-auto">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                       O'yinni Boshlash
                     </CyberButton>
                   )}
@@ -390,26 +474,26 @@ const GameControl = () => {
                   {session?.status === 'playing' && (
                     <>
                       {!showResultsButton ? (
-                        <CyberButton onClick={nextQuestion} variant="secondary">
-                          <SkipForward className="w-5 h-5" />
+                        <CyberButton onClick={nextQuestion} variant="secondary" className="w-full sm:w-auto">
+                          <SkipForward className="w-4 h-4 sm:w-5 sm:h-5" />
                           {(session.current_question_index + 1) >= questions.length ? "Tugatish" : "Keyingi Savol"}
                         </CyberButton>
                       ) : (
-                        <CyberButton onClick={endGame} variant="accent">
-                          <Trophy className="w-5 h-5" />
+                        <CyberButton onClick={endGame} variant="accent" className="w-full sm:w-auto">
+                          <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
                           Natijalarni Elon Qilish
                         </CyberButton>
                       )}
-                      <CyberButton onClick={endGame} variant="destructive">
-                        <StopCircle className="w-5 h-5" />
+                      <CyberButton onClick={endGame} variant="destructive" className="w-full sm:w-auto">
+                        <StopCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                         O'yinni To'xtatish
                       </CyberButton>
                     </>
                   )}
 
                   {session?.status === 'finished' && (
-                    <Link to="/teacher/dashboard">
-                      <CyberButton>
+                    <Link to="/teacher/dashboard" className="w-full sm:w-auto">
+                      <CyberButton className="w-full">
                         Boshqaruv Paneliga Qaytish
                       </CyberButton>
                     </Link>
@@ -420,15 +504,15 @@ const GameControl = () => {
 
             {/* Questions List */}
             <CyberCard>
-              <CyberCardHeader>
-                <CyberCardTitle>Savollar Ro'yxati</CyberCardTitle>
+              <CyberCardHeader className="pb-2 sm:pb-4">
+                <CyberCardTitle className="text-base sm:text-lg">Savollar Ro'yxati</CyberCardTitle>
               </CyberCardHeader>
               <CyberCardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
                   {questions.map((q, index) => (
                     <div 
                       key={q.id} 
-                      className={`p-3 border-2 ${
+                      className={`p-2 sm:p-3 border-2 ${
                         index === session?.current_question_index 
                           ? 'border-accent bg-accent/10' 
                           : index < (session?.current_question_index || 0)
@@ -436,11 +520,11 @@ const GameControl = () => {
                           : 'border-border'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-sm text-muted-foreground w-6">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="font-mono text-xs sm:text-sm text-muted-foreground w-4 sm:w-6">
                           {index + 1}.
                         </span>
-                        <span className="font-mono text-sm flex-1 truncate">
+                        <span className="font-mono text-xs sm:text-sm flex-1 truncate">
                           {q.question_text}
                         </span>
                         <span className="font-mono text-xs text-muted-foreground">
@@ -455,30 +539,30 @@ const GameControl = () => {
           </div>
 
           {/* Participants Scoreboard */}
-          <div>
+          <div className="lg:col-span-1">
             <CyberCard glow="secondary">
-              <CyberCardHeader>
-                <CyberCardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
+              <CyberCardHeader className="pb-2 sm:pb-4">
+                <CyberCardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   Ishtirokchilar ({participants.length})
                 </CyberCardTitle>
               </CyberCardHeader>
               <CyberCardContent>
-                <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                <div className="space-y-2 max-h-64 sm:max-h-[500px] overflow-y-auto">
                   {participants.length === 0 ? (
-                    <p className="text-muted-foreground font-mono text-sm text-center py-8">
+                    <p className="text-muted-foreground font-mono text-xs sm:text-sm text-center py-6 sm:py-8">
                       Ishtirokchilar kutilmoqda...
                     </p>
                   ) : (
                     participants.map((p, index) => (
                       <div 
                         key={p.id} 
-                        className={`flex items-center justify-between p-3 border-2 ${
+                        className={`flex items-center justify-between p-2 sm:p-3 border-2 ${
                           index < 3 ? 'border-accent bg-accent/5' : 'border-border'
                         }`}
                       >
-                        <div className="flex items-center gap-3">
-                          <span className={`font-display text-lg w-6 ${
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`font-display text-sm sm:text-lg w-4 sm:w-6 ${
                             index === 0 ? 'text-yellow-500' :
                             index === 1 ? 'text-gray-400' :
                             index === 2 ? 'text-amber-600' :
@@ -486,9 +570,11 @@ const GameControl = () => {
                           }`}>
                             {index + 1}
                           </span>
-                          <span className="font-mono">{p.nickname}</span>
+                          <span className="font-mono text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none">
+                            {p.nickname}
+                          </span>
                         </div>
-                        <span className="font-display text-lg text-primary">
+                        <span className="font-display text-sm sm:text-lg text-primary">
                           {p.total_score}
                         </span>
                       </div>
@@ -503,17 +589,17 @@ const GameControl = () => {
 
       {/* Permission Prompt Modal */}
       {showNextPrompt && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <CyberCard glow="accent" className="w-full max-w-md mx-4">
-            <CyberCardHeader>
-              <CyberCardTitle className="flex items-center gap-2">
+            <CyberCardHeader className="pb-4">
+              <CyberCardTitle className="flex items-center gap-2 text-lg">
                 <AlertCircle className="w-5 h-5" />
                 Keyingi Savolga O'tish
               </CyberCardTitle>
             </CyberCardHeader>
             <CyberCardContent>
               <div className="space-y-4">
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {timeLeft > 0 
                     ? `Savol vaqti hali tugamagan (${timeLeft}s qoldi). Keyingi savolga o'tishni hohlaysizmi?`
                     : showResultsButton
@@ -522,7 +608,7 @@ const GameControl = () => {
                   }
                 </p>
                 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <CyberButton 
                     onClick={proceedToNextQuestion} 
                     variant="accent"
