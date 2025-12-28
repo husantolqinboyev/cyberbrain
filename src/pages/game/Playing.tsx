@@ -106,9 +106,11 @@ const GamePlaying = () => {
     }
     if (sessionData?.status === 'finished') {
       navigate(`/game/results?pid=${sessionData.participantId}`);
+      return;
     }
-    if (sessionData?.status === 'waiting') {
-      navigate('/game/waiting');
+    // Only redirect to waiting if not already on playing page with participantId
+    if (sessionData?.status === 'waiting' && !window.location.pathname.includes('/playing')) {
+      navigate(`/game/waiting?pid=${sessionData.participantId}`);
     }
   }, [isLoading, sessionData, navigate]);
 

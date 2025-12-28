@@ -44,7 +44,8 @@ export const useGameSession = () => {
       try {
         const savedData = JSON.parse(saved);
         if (savedData.participantId) {
-          console.log('Found saved session, checking with server...');
+          console.log('Found saved session, validating with server...');
+          // Always validate saved session with server
           checkSessionWithId(savedData.participantId);
         }
       } catch (err) {

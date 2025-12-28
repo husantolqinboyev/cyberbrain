@@ -71,13 +71,19 @@ const GameWaiting = () => {
   useEffect(() => {
     if (sessionData) {
       checkSessionAge();
+      
+      // If game is already playing, navigate immediately
+      if (sessionData.status === 'playing') {
+        console.log('Game is already playing, redirecting immediately');
+        navigate(`/game/playing?pid=${sessionData.participantId}`);
+      }
     }
-  }, [sessionData]);
+  }, [sessionData, navigate]);
 
   // Check if game should redirect to playing based on session status
   useEffect(() => {
     if (sessionData?.status === 'playing') {
-      console.log('Game is playing, redirecting to playing page');
+      console.log('Game status changed to playing, redirecting to playing page');
       navigate(`/game/playing?pid=${sessionData.participantId}`);
     }
   }, [sessionData?.status, sessionData?.participantId, navigate]);
