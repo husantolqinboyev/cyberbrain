@@ -1,0 +1,178 @@
+/* Prevent automatic translation of English content */
+.notranslate {
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent translation for English questions and answers */
+.english-content,
+.question-english,
+.option-english,
+.test-english {
+  translate: no;
+  -webkit-translate: no;
+  -moz-translate: no;
+  -o-translate: no;
+  -ms-translate: no;
+  /* Additional protection */
+  font-family: 'Segoe UI', 'Arial', sans-serif !important;
+  unicode-bidi: embed;
+}
+
+/* Prevent translation for Arabic content */
+.arabic-content,
+.question-arabic,
+.option-arabic,
+.test-arabic {
+  translate: no;
+  -webkit-translate: no;
+  -moz-translate: no;
+  -o-translate: no;
+  -ms-translate: no;
+  font-family: 'Arial', 'Tahoma', sans-serif !important;
+  direction: rtl;
+  unicode-bidi: embed;
+  text-align: right;
+}
+
+/* Prevent translation for Russian content */
+.russian-content,
+.question-russian,
+.option-russian,
+.test-russian {
+  translate: no;
+  -webkit-translate: no;
+  -moz-translate: no;
+  -o-translate: no;
+  -ms-translate: no;
+  font-family: 'Times New Roman', 'Arial', sans-serif !important;
+  unicode-bidi: embed;
+}
+
+/* Prevent translation for Turkish content */
+.turkish-content,
+.question-turkish,
+.option-turkish,
+.test-turkish {
+  translate: no;
+  -webkit-translate: no;
+  -moz-translate: no;
+  -o-translate: no;
+  -ms-translate: no;
+  font-family: 'Segoe UI', 'Arial', sans-serif !important;
+  unicode-bidi: embed;
+}
+
+/* Force text direction for different languages */
+.text-ltr {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+.text-rtl {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+/* Prevent translation for code blocks and technical terms */
+code,
+pre,
+.technical-term,
+.programming-term {
+  translate: no;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Prevent translation for mathematical expressions */
+.math-expression,
+.formula,
+.equation {
+  translate: no;
+  font-family: 'Times New Roman', serif !important;
+}
+
+/* Prevent translation for specific UI elements */
+.english-ui,
+.english-label,
+.english-button,
+.arabic-ui,
+.arabic-label,
+.arabic-button,
+.russian-ui,
+.russian-label,
+.russian-button,
+.turkish-ui,
+.turkish-label,
+.turkish-button {
+  translate: no;
+}
+
+/* Override any translation attempts for specific languages */
+*[lang="en"],
+*[lang="ar"],
+*[lang="ru"],
+*[lang="tr"] {
+  translate: no !important;
+}
+
+/* Prevent translation for quotes and citations */
+.english-quote,
+.english-citation,
+.arabic-quote,
+.arabic-citation,
+.russian-quote,
+.russian-citation,
+.turkish-quote,
+.turkish-citation {
+  translate: no;
+  font-style: italic;
+}
+
+/* Prevent translation for instructions */
+.english-instruction,
+.english-direction,
+.arabic-instruction,
+.arabic-direction,
+.russian-instruction,
+.russian-direction,
+.turkish-instruction,
+.turkish-direction {
+  translate: no;
+  font-weight: 500;
+}
+
+/* Prevent translation for technical documentation */
+.english-docs,
+.english-specification,
+.arabic-docs,
+.arabic-specification,
+.russian-docs,
+.russian-specification,
+.turkish-docs,
+.turkish-specification {
+  translate: no;
+  font-family: 'Georgia', serif !important;
+}
+
+/* Special handling for Arabic numbers and text */
+.arabic-number {
+  font-family: 'Arial', sans-serif !important;
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+/* Cyrillic text support */
+.cyrillic-text {
+  font-family: 'Times New Roman', 'DejaVu Sans', sans-serif !important;
+  unicode-bidi: embed;
+}
+
+/* Turkish special characters support */
+.turkish-text {
+  font-family: 'Segoe UI', 'Arial', sans-serif !important;
+  unicode-bidi: embed;
+}

@@ -1,12 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BrainLogo } from "@/components/BrainLogo";
 import { CyberButton } from "@/components/ui/cyber-button";
-import { CyberCard, CyberCardContent } from "@/components/ui/cyber-card";
+import { CyberCard, CyberCardHeader, CyberCardTitle, CyberCardContent } from "@/components/ui/cyber-card";
 import { Clock, CheckCircle, XCircle, Loader2, Trophy, LogOut } from "lucide-react";
 import { useGameSession } from "@/hooks/useGameSession";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAntiTampering, storeOriginalContent, preventManipulation } from "@/hooks/useAntiTampering";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +36,12 @@ const GamePlaying = () => {
   const { toast } = useToast();
   const { sessionData, isLoading, submitAnswer, updateSessionState, checkSession, getCurrentRank, leaveSession } = useGameSession();
   
+  // Anti-tampering protection
+  const { isTampered, warnings, resetAllContent } = useAntiTampering([
+    'question-text',
+    'option-a', 'option-b', 'option-c', 'option-d'
+  ]);
+
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -67,6 +74,15 @@ const GamePlaying = () => {
     }
   };
 
+  // Language detection function
+  const getLanguageClasses = (text: string) => {
+    if (text.match(/[\u0600-\u06FF]/)) return 'arabic-content text-rtl';
+    if (text.match(/[\u0400-\u04FF]/)) return 'russian-content';
+    if (text.match(/[a-zA-Z]/)) return 'english-content text-ltr';
+    if (text.match(/[çğıöşüÇĞİÖŞÜ]/)) return 'turkish-content';
+    return '';
+  };
+
   // Random funny messages
   const waitingMessages = [
     "Tahmin bilan belgiladingizmi yoki dahomisz?",
@@ -80,6 +96,46 @@ const GamePlaying = () => {
     "Javobingiz qiziqarli bo'lishi aniq...",
     "Bu savol uchun maxsus hisoblash kerak..."
   ];
+
+  // Anti-tampering effect
+  useEffect(() => {
+    if (isTampered && warnings.length > 0) {
+      toast({
+        title: "O'yin buzilishi aniqlandi!",
+        description: "Iltimos, o'yin kontentini o'zgartirmang. Kontent tiklandi.",
+        variant: "destructive",
+      });
+      resetAllContent();
+      
+      // Log tampering attempt
+      console.warn('Game tampering detected:', warnings);
+      
+      // Optional: Disable game temporarily
+      setHasAnswered(true);
+      setSelectedOption(null);
+    }
+  }, [isTampered, warnings, toast, resetAllContent]);
+
+  // Store original content when question loads
+  useEffect(() => {
+    if (currentQuestion) {
+      storeOriginalContent('question-text', currentQuestion.question_text);
+      currentQuestion.options.forEach((option, index) => {
+        storeOriginalContent(`option-${String.fromCharCode(97 + index)}`, option);
+      });
+    }
+  }, [currentQuestion]);
+
+  // Prevent manipulation on question elements
+  useEffect(() => {
+    const elements = ['question-text', 'option-a', 'option-b', 'option-c', 'option-d'];
+    elements.forEach(id => {
+      const element = document.getElementById(id);
+      if (element) {
+        preventManipulation(element);
+      }
+    });
+  }, [currentQuestion]);
 
   // Update rank when score changes
   useEffect(() => {
@@ -387,7 +443,10 @@ const GamePlaying = () => {
         {/* Question */}
         <CyberCard glow="primary" className="mb-4 sm:mb-6">
           <CyberCardContent className="py-6 sm:py-8">
-            <h2 className="font-display text-lg sm:text-xl md:text-2xl text-center text-foreground">
+            <h2 
+              id="question-text"
+              className={`font-display text-lg sm:text-xl md:text-2xl text-center text-foreground ${getLanguageClasses(currentQuestion.question_text)}`}
+            >
               {currentQuestion.question_text}
             </h2>
           </CyberCardContent>
@@ -452,7 +511,10 @@ const GamePlaying = () => {
                   <span className="font-display text-base sm:text-lg shrink-0">
                     {String.fromCharCode(65 + index)}.
                   </span>
-                  <span className="font-mono text-sm sm:text-base">
+                  <span 
+                    id={`option-${String.fromCharCode(97 + index)}`}
+                    className={`font-mono text-sm sm:text-base ${getLanguageClasses(option)}`}
+                  >
                     {option}
                   </span>
                 </div>
