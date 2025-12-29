@@ -78,42 +78,55 @@ const GameWaiting = () => {
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'game_sessions',
           filter: `id=eq.${sessionData.sessionId}`
         },
         (payload) => {
           console.log('Realtime update received:', payload);
-          const newData = payload.new as {
-            status: string;
-            current_question_index: number;
-            question_started_at: string | null;
-          };
           
-          console.log('Updating session state to:', newData);
-          updateSessionState(
-            newData.status,
-            newData.current_question_index,
-            newData.question_started_at
-          );
+          if (payload.eventType === 'UPDATE') {
+            const newData = payload.new as {
+              status: string;
+              current_question_index: number;
+              question_started_at: string | null;
+              started_at: string | null;
+            };
+            
+            console.log('Updating session state to:', newData);
+            updateSessionState(
+              newData.status,
+              newData.current_question_index,
+              newData.question_started_at
+            );
 
-          // Navigate to playing page when game starts
-          if (newData.status === 'playing') {
-            console.log('Game started, navigating to playing page');
-            navigate(`/game/playing?pid=${sessionData.participantId}`);
+            // Navigate to playing page when game starts
+            if (newData.status === 'playing') {
+              console.log('Game started via realtime, navigating to playing page');
+              window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+            }
           }
         }
       )
       .subscribe((status) => {
         console.log('Realtime subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to realtime updates');
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          console.log('Realtime connection lost, attempting to reconnect...');
+          // Force refresh after connection loss
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
       });
 
     return () => {
       console.log('Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [sessionData?.sessionId]); // Only depend on sessionId, not on navigate/updateSessionState
+  }, [sessionData?.sessionId, sessionData?.participantId]); // Include participantId for navigation
 
   // Check session age when session data is available
   useEffect(() => {
@@ -125,9 +138,41 @@ const GameWaiting = () => {
         console.log('Game is already playing, redirecting immediately');
         // Use window.location.href for force navigation
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        return; // Prevent further execution
+      }
+      
+      // Additional check - if session has question_started_at
+      if (sessionData.questionStartedAt) {
+        console.log('Session has started, redirecting to playing page');
+        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        return;
       }
     }
   }, [sessionData]);
+
+  // Periodic session check as backup
+  useEffect(() => {
+    if (!sessionData?.sessionId) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('game_sessions')
+          .select('status, started_at, question_started_at')
+          .eq('id', sessionData.sessionId)
+          .single();
+        
+        if (data && data.status === 'playing' && sessionData.status !== 'playing') {
+          console.log('Periodic check detected game started, redirecting');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }
+      } catch (error) {
+        console.error('Periodic session check error:', error);
+      }
+    }, 3000); // Check every 3 seconds
+    
+    return () => clearInterval(interval);
+  }, [sessionData?.sessionId, sessionData?.status, sessionData?.participantId]);
 
   // Redirect if no session
   useEffect(() => {
