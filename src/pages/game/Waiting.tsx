@@ -8,8 +8,10 @@ import { useGameSession } from "@/hooks/useGameSession";
 import { supabase } from "@/integrations/supabase/client";
 
 const GameWaiting = () => {
+  console.log('🎯🎯🎯 GAME WAITING COMPONENT RENDERED!');
   const [searchParams] = useSearchParams();
   const participantId = searchParams.get("pid") || "";
+  console.log('🎯 participantId:', participantId);
   const [dots, setDots] = useState("");
   const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
@@ -130,6 +132,9 @@ const GameWaiting = () => {
 
   // Check session age when session data is available
   useEffect(() => {
+    console.log('🔥🔥🔥 USEEFFECT TRIGGERED - sessionData changed!');
+    console.log('🔥 sessionData exists:', !!sessionData);
+    
     if (sessionData) {
       console.log('=== SESSION DEBUG ===');
       console.log('Full session data:', sessionData);
@@ -137,6 +142,7 @@ const GameWaiting = () => {
       console.log('Question started at:', sessionData.questionStartedAt);
       console.log('Session ID:', sessionData.sessionId);
       console.log('Participant ID:', sessionData.participantId);
+      console.log('Current question index:', sessionData.currentQuestionIndex);
       console.log('==================');
       
       checkSessionAge();
@@ -144,6 +150,7 @@ const GameWaiting = () => {
       // FORCE REDIRECT - If game is already playing, navigate immediately
       if (sessionData.status === 'playing') {
         console.log('🚀🚀🚀 GAME IS ALREADY PLAYING - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
         // Use window.location.href for force navigation
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return; // Prevent further execution
@@ -152,6 +159,7 @@ const GameWaiting = () => {
       // Additional check - if session has question_started_at
       if (sessionData.questionStartedAt) {
         console.log('🚀🚀🚀 SESSION HAS QUESTION STARTED - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return;
       }
@@ -159,11 +167,14 @@ const GameWaiting = () => {
       // Check if currentQuestionIndex > 0 (game has started)
       if (sessionData.currentQuestionIndex > 0) {
         console.log('🚀🚀🚀 CURRENT QUESTION INDEX > 0 - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return;
       }
       
       console.log('❌ Game not started yet, continuing to wait...');
+    } else {
+      console.log('❌ No session data available');
     }
   }, [sessionData]);
 
