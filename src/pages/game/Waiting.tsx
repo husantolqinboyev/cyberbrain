@@ -134,6 +134,7 @@ const GameWaiting = () => {
   useEffect(() => {
     console.log('🔥🔥🔥 USEEFFECT TRIGGERED - sessionData changed!');
     console.log('🔥 sessionData exists:', !!sessionData);
+    console.log('🔥 sessionData reference:', sessionData);
     
     if (sessionData) {
       console.log('=== SESSION DEBUG ===');
@@ -151,8 +152,13 @@ const GameWaiting = () => {
       if (sessionData.status === 'playing') {
         console.log('🚀🚀🚀 GAME IS ALREADY PLAYING - FORCE REDIRECT!!!');
         console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
-        // Use window.location.href for force navigation
-        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        
+        // Add a small delay to ensure React has processed the state
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
         return; // Prevent further execution
       }
       
@@ -160,7 +166,12 @@ const GameWaiting = () => {
       if (sessionData.questionStartedAt) {
         console.log('🚀🚀🚀 SESSION HAS QUESTION STARTED - FORCE REDIRECT!!!');
         console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
-        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
         return;
       }
       
@@ -168,7 +179,12 @@ const GameWaiting = () => {
       if (sessionData.currentQuestionIndex > 0) {
         console.log('🚀🚀🚀 CURRENT QUESTION INDEX > 0 - FORCE REDIRECT!!!');
         console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
-        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
         return;
       }
       
