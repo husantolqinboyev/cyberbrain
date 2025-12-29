@@ -131,11 +131,19 @@ const GameWaiting = () => {
   // Check session age when session data is available
   useEffect(() => {
     if (sessionData) {
+      console.log('=== SESSION DEBUG ===');
+      console.log('Full session data:', sessionData);
+      console.log('Status:', sessionData.status);
+      console.log('Question started at:', sessionData.questionStartedAt);
+      console.log('Session ID:', sessionData.sessionId);
+      console.log('Participant ID:', sessionData.participantId);
+      console.log('==================');
+      
       checkSessionAge();
       
       // If game is already playing, navigate immediately
       if (sessionData.status === 'playing') {
-        console.log('Game is already playing, redirecting immediately');
+        console.log('✅ Game is already playing, redirecting immediately');
         // Use window.location.href for force navigation
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return; // Prevent further execution
@@ -143,10 +151,12 @@ const GameWaiting = () => {
       
       // Additional check - if session has question_started_at
       if (sessionData.questionStartedAt) {
-        console.log('Session has started, redirecting to playing page');
+        console.log('✅ Session has started, redirecting to playing page');
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return;
       }
+      
+      console.log('❌ Game not started yet, continuing to wait...');
     }
   }, [sessionData]);
 
@@ -156,23 +166,32 @@ const GameWaiting = () => {
     
     const interval = setInterval(async () => {
       try {
+        console.log('🔄 Periodic check - querying session status...');
         const { data, error } = await supabase
           .from('game_sessions')
           .select('status, started_at, question_started_at')
           .eq('id', sessionData.sessionId)
           .single();
         
+        console.log('📊 Periodic check result:', { data, error });
+        console.log('📊 Current local status:', sessionData.status);
+        
         if (data && data.status === 'playing' && sessionData.status !== 'playing') {
-          console.log('Periodic check detected game started, redirecting');
+          console.log('🚀 Periodic check detected game started, redirecting');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }
+        
+        if (data && data.question_started_at && !sessionData.questionStartedAt) {
+          console.log('🚀 Periodic check detected question started, redirecting');
           window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         }
       } catch (error) {
-        console.error('Periodic session check error:', error);
+        console.error('❌ Periodic session check error:', error);
       }
-    }, 3000); // Check every 3 seconds
+    }, 2000); // Check every 2 seconds for faster response
     
     return () => clearInterval(interval);
-  }, [sessionData?.sessionId, sessionData?.status, sessionData?.participantId]);
+  }, [sessionData?.sessionId, sessionData?.status, sessionData?.participantId, sessionData?.questionStartedAt]);
 
   // Redirect if no session
   useEffect(() => {
