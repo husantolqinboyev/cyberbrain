@@ -173,8 +173,15 @@ export const useGameSession = () => {
           questionStartedAt: session.question_started_at,
           totalScore: participant.total_score
         };
-        console.log('Setting session data:', newSessionData);
+        console.log('🎯 SETTING SESSION DATA:', newSessionData);
+        console.log('🎯 SESSION STATUS:', session.status);
+        console.log('🎯 QUESTION STARTED AT:', session.question_started_at);
         setSessionData(newSessionData);
+        
+        // Add a small delay to ensure state is set
+        setTimeout(() => {
+          console.log('🎯 SESSION DATA AFTER SET:', newSessionData);
+        }, 100);
       }
     } catch (err) {
       console.error('Error checking session:', err);

@@ -141,9 +141,9 @@ const GameWaiting = () => {
       
       checkSessionAge();
       
-      // If game is already playing, navigate immediately
+      // FORCE REDIRECT - If game is already playing, navigate immediately
       if (sessionData.status === 'playing') {
-        console.log('✅ Game is already playing, redirecting immediately');
+        console.log('🚀🚀🚀 GAME IS ALREADY PLAYING - FORCE REDIRECT!!!');
         // Use window.location.href for force navigation
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return; // Prevent further execution
@@ -151,7 +151,14 @@ const GameWaiting = () => {
       
       // Additional check - if session has question_started_at
       if (sessionData.questionStartedAt) {
-        console.log('✅ Session has started, redirecting to playing page');
+        console.log('🚀🚀🚀 SESSION HAS QUESTION STARTED - FORCE REDIRECT!!!');
+        window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        return;
+      }
+      
+      // Check if currentQuestionIndex > 0 (game has started)
+      if (sessionData.currentQuestionIndex > 0) {
+        console.log('🚀🚀🚀 CURRENT QUESTION INDEX > 0 - FORCE REDIRECT!!!');
         window.location.href = `/game/playing?pid=${sessionData.participantId}`;
         return;
       }

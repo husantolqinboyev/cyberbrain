@@ -255,25 +255,34 @@ const GameControl = () => {
       return;
     }
 
-    console.log('Starting game for session:', session.id);
+    console.log('🎮🎮🎮 STARTING GAME FOR SESSION:', session.id);
+    console.log('🎮 Current session status:', session.status);
+    console.log('🎮 Questions count:', questions.length);
     
-    const { error } = await supabase
+    const updateData = {
+      status: 'playing',
+      started_at: new Date().toISOString(),
+      current_question_index: 0,
+      question_started_at: new Date().toISOString()
+    };
+    
+    console.log('🎮 UPDATE DATA:', updateData);
+    
+    const { error, data } = await supabase
       .from('game_sessions')
-      .update({
-        status: 'playing',
-        started_at: new Date().toISOString(),
-        current_question_index: 0,
-        question_started_at: new Date().toISOString()
-      })
-      .eq('id', session.id);
+      .update(updateData)
+      .eq('id', session.id)
+      .select();
 
     if (error) {
-      console.error('Error starting game:', error);
+      console.error('❌ ERROR STARTING GAME:', error);
       toast({ title: "Xato", description: "O'yinni boshlashda xatolik", variant: "destructive" });
       return;
     }
 
-    console.log('Game started successfully, session status updated');
+    console.log('✅ GAME STARTED SUCCESSFULLY!');
+    console.log('✅ Updated session data:', data);
+    console.log('✅ Session status should now be: playing');
     
     // Play notification sound when game starts
     playNotificationSound();
