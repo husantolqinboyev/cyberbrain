@@ -16,6 +16,68 @@ const GameWaiting = () => {
   const [isLeaving, setIsLeaving] = useState(false);
   const navigate = useNavigate();
   const { sessionData, isLoading, updateSessionState, checkSession, leaveSession } = useGameSession();
+  
+  // Direct session check without useEffect dependency
+  const checkAndRedirect = () => {
+    console.log('🔍 DIRECT SESSION CHECK');
+    console.log('🔍 Current sessionData:', sessionData);
+    
+    if (sessionData) {
+      console.log('=== DIRECT SESSION DEBUG ===');
+      console.log('Status:', sessionData.status);
+      console.log('Question started at:', sessionData.questionStartedAt);
+      console.log('Session ID:', sessionData.sessionId);
+      console.log('Participant ID:', sessionData.participantId);
+      console.log('Current question index:', sessionData.currentQuestionIndex);
+      console.log('=============================');
+      
+      // FORCE REDIRECT - If game is already playing, navigate immediately
+      if (sessionData.status === 'playing') {
+        console.log('🚀🚀🚀 DIRECT CHECK - GAME IS ALREADY PLAYING - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
+        
+        // Add a small delay to ensure React has processed the state
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
+        return true; // Redirect initiated
+      }
+      
+      // Additional check - if session has question_started_at
+      if (sessionData.questionStartedAt) {
+        console.log('🚀🚀🚀 DIRECT CHECK - SESSION HAS QUESTION STARTED - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
+        
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
+        return true; // Redirect initiated
+      }
+      
+      // Check if currentQuestionIndex > 0 (game has started)
+      if (sessionData.currentQuestionIndex > 0) {
+        console.log('🚀🚀🚀 DIRECT CHECK - CURRENT QUESTION INDEX > 0 - FORCE REDIRECT!!!');
+        console.log('🚀 Redirecting to:', `/game/playing?pid=${sessionData.participantId}`);
+        
+        setTimeout(() => {
+          console.log('🚀 EXECUTING REDIRECT NOW!');
+          window.location.href = `/game/playing?pid=${sessionData.participantId}`;
+        }, 100);
+        
+        return true; // Redirect initiated
+      }
+      
+      console.log('❌ Game not started yet, continuing to wait...');
+    } else {
+      console.log('❌ No session data available');
+    }
+    
+    return false; // No redirect needed
+  };
 
   // Handle exit from waiting room
   const handleExit = async () => {
@@ -264,6 +326,16 @@ const GameWaiting = () => {
 
       {/* Main Content */}
       <main className="relative z-10 flex-1 flex items-center justify-center p-2 sm:p-4">
+        {/* Direct session check in render */}
+        {(() => {
+          console.log('🎯 RENDER TIME SESSION CHECK');
+          const shouldRedirect = checkAndRedirect();
+          if (shouldRedirect) {
+            return null; // Don't render anything if redirecting
+          }
+          return null;
+        })()}
+        
         <CyberCard glow="primary" className="w-full max-w-md sm:max-w-lg text-center">
           <CyberCardContent className="py-8 sm:py-12">
             <div className="flex justify-center mb-4 sm:mb-6">
